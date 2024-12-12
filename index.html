@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html ng-app="myApp">
+  <head>
+    <title>AngularJS TV Show Episode Viewer</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+    />
+    <script src="app.js"></script>
+  </head>
+  <body ng-controller="EpisodeListCtrl" class="container">
+    <h1>TMDB Episode Manager</h1>
+
+    <div class="row form-group">
+      <div class="col-md-6">
+        <label for="apiKey" class="form-label">TMDB APIKey:</label>
+        <div class="input-group">
+          <input
+            type="{{apiKeyInputType}}"
+            ng-model="apiKey"
+            id="apiKey"
+            class="form-control"
+            placeholder="Enter apiKey"
+          />
+          <span class="input-group-btn">
+            <button
+              ng-click="toggleInputType()"
+              class="btn btn-default"
+              type="button"
+            >
+              <i
+                ng-class="apiKeyInputType === 'password' ? 'glyphicon glyphicon-eye-open' : 'glyphicon glyphicon-eye-close'"
+              ></i>
+            </button>
+          </span>
+        </div>
+
+        <label for="showId" class="form-label">Show ID:</label>
+        <input
+          type="text"
+          ng-model="showId"
+          id="showId"
+          class="form-control"
+          placeholder="Enter Show ID"
+        />
+      </div>
+    </div>
+    <div class="row form-group">
+      <div class="col-md-6">
+        <button ng-click="getEpisodesDetails(showId)" class="btn btn-primary">
+          Get Details
+        </button>
+      </div>
+    </div>
+    <!-- <div class="row">{{ShowDetails}}</div> -->
+    <div class="row form-group" ng-show="ShowDetails.name">
+      <div class="col-md-12">
+        <img class="img-rounded" style="height:215px"
+        src={{"https://image.tmdb.org/t/p/original/"+ShowDetails.poster_path}}>
+      </div>
+    </div>
+    <h3>{{ShowDetails.name}}</h3>
+    <div ng-hide="seasons.length==0">
+      <div class="row">
+        <div class="col-md-6" ng-if="IsSeasonLoading">
+          <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+
+        <div class="col-md-6" ng-show="!IsSeasonLoading">
+          <select
+            ng-model="selectedSeason"
+            class="form-control"
+            ng-options="season.name for season in seasons"
+            ng-change="episodeListFetchBySeason(showId, selectedSeason.season_number)"
+          >
+            <option value="">-- Choose Season --</option>
+          </select>
+        </div>
+      </div>
+      <!-- {{selectedSeason}} -->
+      <br />
+
+      <br />
+      <section id="episodeList" ng-hide="episodes.length==0">
+        <h2>Episodes</h2>
+        <input
+          type="text"
+          ng-model="filterEpisodes"
+          id="episodeFilterId"
+          class="form-control form-group"
+          placeholder="Search for episode"
+        />
+        {{titleSelected}}
+        <br />
+        <b>{{lastSelectedText}}</b>
+        <button
+          type="button"
+          class="btn btn-default"
+          ng-click="copyToClipboard()"
+        >
+          <i class="glyphicon glyphicon-copy"></i> copy
+        </button>
+        <table class="table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>#</th>
+              <th>Episode Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              ng-repeat="episode in episodes | orderBy:'isChecked'| filter: filterEpisodes"
+            >
+              <td>
+                <input
+                  type="checkbox"
+                  ng-model="episode.isChecked"
+                  ng-click="toggleEpisode(episode)"
+                />
+              </td>
+              <td>{{ episode.episode_number }}</td>
+              <td>
+                <span>{{ episode.name }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p ng-show="episodeNames.length === 0">
+          No episodes found for this season.
+        </p>
+      </section>
+    </div>
+  </body>
+</html>
